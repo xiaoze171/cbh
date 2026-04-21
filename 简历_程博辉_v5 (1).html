@@ -1,0 +1,1539 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>程博辉 · CBH</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700;900&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+<style>
+/* ══════════════════════════════════════════════════════
+   DESIGN TOKENS
+══════════════════════════════════════════════════════ */
+:root {
+  --bg:        #f5f4f0;
+  --bg-card:   #efede7;
+  --fg:        #111110;
+  --fg2:       #4a4944;
+  --muted:     #9a9690;
+  --border:    rgba(17,17,16,0.09);
+  --border2:   rgba(17,17,16,0.05);
+  --nav-bg:    rgba(245,244,240,0.85);
+  --dot:       rgba(17,17,16,0.07);
+  --tag-bg:    rgba(17,17,16,0.05);
+  --tag-fg:    #9a9690;
+  --shadow-sm: 0 1px 8px rgba(17,17,16,0.06);
+  --shadow-md: 0 4px 32px rgba(17,17,16,0.10);
+  --shadow-lg: 0 16px 64px rgba(17,17,16,0.14);
+  --accent:    #c8a96e;   /* warm gold */
+  --accent2:   #8b7355;
+  --r:         4px;
+}
+
+/* ── Reset ── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{
+  scroll-behavior:smooth;font-size:16px;
+  background:var(--bg); /* 确保html层也有背景色 */
+  min-height:100%;
+}
+body{
+  background:var(--bg);color:var(--fg);
+  font-family:'Noto Sans SC',sans-serif;
+  overflow-x:hidden;cursor:none;
+  -webkit-font-smoothing:antialiased;
+  min-height:100vh;
+  isolation:isolate; /* 防止mix-blend-mode穿透影响子元素 */
+}
+
+/* ── Dot grid bg ── */
+body::before{
+  content:'';position:fixed;inset:0;
+  background-image:radial-gradient(var(--dot) 1.2px,transparent 1.2px);
+  background-size:28px 28px;pointer-events:none;z-index:0;
+  will-change:auto;
+}
+
+/* ══════════════════════════════════════════════════════
+   LOADER
+══════════════════════════════════════════════════════ */
+#loader{
+  position:fixed;inset:0;z-index:9000;
+  background:var(--fg);
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  gap:28px;
+  transition:opacity .6s ease, visibility .6s ease;
+}
+#loader.hide{opacity:0;visibility:hidden;pointer-events:none}
+.loader-name{
+  font-family:'Space Mono',monospace;
+  font-size:clamp(13px,2vw,18px);
+  letter-spacing:.28em;text-transform:uppercase;
+  color:rgba(255,255,255,.9);
+}
+.loader-bar-wrap{
+  width:160px;height:1px;
+  background:rgba(255,255,255,.12);
+  overflow:hidden;
+}
+.loader-bar{
+  height:100%;background:var(--accent);
+  width:0%;
+  animation:loaderFill 1.6s cubic-bezier(.4,0,.2,1) forwards;
+}
+@keyframes loaderFill{to{width:100%}}
+.loader-pct{
+  font-family:'Space Mono',monospace;
+  font-size:11px;letter-spacing:.14em;
+  color:rgba(255,255,255,.35);
+}
+
+/* ══════════════════════════════════════════════════════
+   CUSTOM CURSOR
+══════════════════════════════════════════════════════ */
+#c-dot{
+  position:fixed;width:6px;height:6px;
+  background:var(--fg);border-radius:50%;
+  pointer-events:none;z-index:9999;
+  transform:translate(-50%,-50%);
+  transition:width .2s,height .2s,background .3s;
+}
+#c-ring{
+  position:fixed;width:32px;height:32px;
+  border:1px solid var(--fg);border-radius:50%;
+  pointer-events:none;z-index:9998;
+  transform:translate(-50%,-50%);
+  opacity:.18;
+  transition:width .45s cubic-bezier(.16,1,.3,1),
+             height .45s cubic-bezier(.16,1,.3,1),
+             opacity .3s,border-color .3s;
+}
+body.cursor-hover #c-dot{width:4px;height:4px;}
+body.cursor-hover #c-ring{width:48px;height:48px;opacity:.1;}
+
+/* ══════════════════════════════════════════════════════
+   SCROLL PROGRESS
+══════════════════════════════════════════════════════ */
+#prog{
+  position:fixed;top:0;left:0;z-index:9997;
+  height:1px;width:0%;
+  background:linear-gradient(90deg,var(--accent),var(--accent2));
+  transition:width .05s linear;
+}
+
+/* ══════════════════════════════════════════════════════
+   NAV
+══════════════════════════════════════════════════════ */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:500;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:18px max(56px, calc((100vw - 1240px) / 2));
+  background:var(--nav-bg);
+  backdrop-filter:blur(20px) saturate(1.6);
+  -webkit-backdrop-filter:blur(20px) saturate(1.6);
+  border-bottom:1px solid var(--border2);
+}
+.nav-logo{
+  font-family:'Space Mono',monospace;
+  font-size:13px;font-weight:700;letter-spacing:.1em;
+  color:var(--fg);
+  display:flex;align-items:center;gap:8px;
+}
+.nav-logo-dot{
+  width:6px;height:6px;border-radius:50%;
+  background:var(--accent);
+  animation:pulseDot 2.5s ease infinite;
+}
+@keyframes pulseDot{
+  0%,100%{transform:scale(1);opacity:1}
+  50%{transform:scale(1.6);opacity:.6}
+}
+.nav-links{display:flex;gap:28px;list-style:none;align-items:center}
+.nav-links a{
+  font-size:12px;color:var(--muted);text-decoration:none;
+  letter-spacing:.04em;
+  position:relative;transition:color .25s;
+}
+.nav-links a::after{
+  content:'';position:absolute;bottom:-2px;left:0;right:0;
+  height:1px;background:var(--accent);
+  transform:scaleX(0);transform-origin:right;
+  transition:transform .35s cubic-bezier(.16,1,.3,1);
+}
+.nav-links a:hover{color:var(--fg)}
+.nav-links a:hover::after{transform:scaleX(1);transform-origin:left}
+
+#lang-btn{
+  font-family:'Space Mono',monospace;
+  font-size:9px;letter-spacing:.14em;text-transform:uppercase;
+  background:transparent;border:1px solid var(--border);
+  color:var(--muted);padding:6px 12px;cursor:none;
+  transition:background .25s,color .25s,border-color .25s;
+}
+#lang-btn:hover{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+
+/* ══════════════════════════════════════════════════════
+   HERO
+══════════════════════════════════════════════════════ */
+#hero{
+  position:relative;width:100%;height:100vh;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  overflow:hidden;z-index:1;
+}
+#hero-grain{
+  position:absolute;inset:0;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events:none;opacity:.4;z-index:2;
+}
+.hero-eyebrow{
+  font-family:'Space Mono',monospace;
+  font-size:9px;letter-spacing:.36em;text-transform:uppercase;
+  color:var(--muted);margin-bottom:32px;
+  opacity:0;animation:fadeUp .6s ease .2s forwards;
+  position:relative;z-index:10;
+}
+.hero-title-wrap{
+  position:relative;z-index:10;text-align:center;
+  transform-style:preserve-3d;
+  transition:transform .06s linear;
+  will-change:transform;
+}
+/* Large serif display line */
+.hero-display{
+  display:block;
+  font-size:clamp(48px,9.5vw,118px);
+  line-height:.95;
+  color:var(--fg);
+  opacity:0;animation:fadeUp .8s cubic-bezier(.16,1,.3,1) .4s forwards;
+}
+.hero-hello{
+  font-family:'Noto Sans SC',sans-serif;
+  font-style:normal;font-weight:900;
+  letter-spacing:-.03em;
+}
+/* Cheng — thin italic sans, matches the screenshot style */
+#hero-name{
+  font-family:'Noto Sans SC',sans-serif;
+  font-style:italic;font-weight:300;
+  letter-spacing:-.01em;
+}
+/* Sub line */
+.hero-sub{
+  display:block;
+  font-family:'Space Mono',monospace;
+  font-size:clamp(11px,1.6vw,16px);
+  letter-spacing:.18em;text-transform:uppercase;
+  color:var(--muted);margin-top:24px;
+  opacity:0;animation:fadeUp .6s ease .75s forwards;
+}
+/* Accent divider */
+.hero-divider{
+  width:40px;height:1px;
+  background:linear-gradient(90deg,var(--accent),transparent);
+  margin:20px auto 0;
+  opacity:0;animation:fadeUp .4s ease .9s forwards;
+}
+/* Name tag badge */
+.hero-badge{
+  position:absolute;
+  font-family:'Space Mono',monospace;
+  font-size:9px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--muted);
+  border:1px solid var(--border);
+  padding:5px 12px;
+  background:var(--bg-card);
+  opacity:0;animation:fadeUp .5s ease 1.1s forwards;
+}
+.hero-badge-tl{top:20%;left:8%}
+.hero-badge-br{bottom:24%;right:8%}
+
+/* Bottom hint */
+.hero-hint{
+  position:absolute;bottom:32px;
+  left:0;right:0;text-align:center;
+  font-family:'Space Mono',monospace;
+  font-size:8px;letter-spacing:.22em;text-transform:uppercase;
+  color:var(--muted);z-index:10;
+  opacity:0;animation:fadeUp .4s ease 1.3s forwards;
+  display:flex;align-items:center;justify-content:center;gap:12px;
+}
+.hero-hint span{width:24px;height:1px;background:var(--border);display:block}
+/* Bouncing scroll caret */
+.hero-caret{
+  position:absolute;bottom:70px;left:50%;transform:translateX(-50%);
+  width:16px;height:16px;z-index:10;
+  border-right:1px solid var(--muted);border-bottom:1px solid var(--muted);
+  transform:translateX(-50%) rotate(45deg);
+  opacity:0;
+  animation:fadeUp .4s ease 1.5s forwards, caretBounce 2s ease 2s infinite;
+}
+@keyframes caretBounce{
+  0%,100%{transform:translateX(-50%) rotate(45deg) translateY(0)}
+  50%{transform:translateX(-50%) rotate(45deg) translateY(6px)}
+}
+
+@keyframes fadeUp{
+  from{opacity:0;transform:translateY(18px)}
+  to{opacity:1;transform:translateY(0)}
+}
+
+/* ── BALL + LENS ── */
+#ball{
+  position:absolute;
+  width:200px;height:200px;border-radius:50%;
+  background:#111110; /* 显式颜色，不用变量，避免渲染问题 */
+  pointer-events:all;z-index:200;
+  top:0;left:0;transform:translate(-50%,-50%);
+  cursor:none;
+  box-shadow:0 16px 64px rgba(17,17,16,0.18);
+  transition:box-shadow .3s;
+  isolation:isolate;
+}
+#ball:hover{box-shadow:0 24px 80px rgba(17,17,16,.25)}
+#lens{
+  position:absolute;width:200px;height:200px;border-radius:50%;
+  overflow:hidden;pointer-events:none;z-index:201;
+  top:0;left:0;transform:translate(-50%,-50%);
+}
+#lens-inner{
+  position:absolute;white-space:nowrap;
+  color:var(--bg);
+  font-size:clamp(48px,9.5vw,118px);
+  font-family:'Noto Sans SC',sans-serif;
+  font-weight:900;
+  letter-spacing:-.03em;line-height:.95;
+  pointer-events:none;user-select:none;
+  transform-style:preserve-3d;will-change:transform;
+}
+#lens-inner em{
+  font-family:'Noto Sans SC',sans-serif;
+  font-style:italic;font-weight:300;
+  letter-spacing:-.01em;
+}
+#lens-meta{
+  position:absolute;
+  font-family:'Space Mono',monospace;
+  font-size:clamp(10px,1.4vw,14px);
+  color:rgba(245,244,240,.5);
+  letter-spacing:.14em;white-space:nowrap;pointer-events:none;
+}
+
+/* ══════════════════════════════════════════════════════
+   SECTION BASE
+══════════════════════════════════════════════════════ */
+section{
+  position:relative;z-index:1;
+  padding:120px max(72px, calc((100vw - 1240px) / 2));
+  border-top:1px solid var(--border2);
+}
+.sec-eyebrow{
+  font-family:'Space Mono',monospace;
+  font-size:8px;letter-spacing:.28em;text-transform:uppercase;
+  color:var(--muted);margin-bottom:20px;
+  display:flex;align-items:center;gap:14px;
+}
+.sec-eyebrow::before{
+  content:'';width:20px;height:1px;
+  background:var(--accent);flex-shrink:0;
+}
+.sec-title{
+  font-family:'DM Serif Display',serif;
+  font-size:clamp(32px,5vw,60px);
+  font-weight:400;letter-spacing:-.02em;line-height:1.08;
+  margin-bottom:64px;color:var(--fg);
+}
+.sec-title em{font-style:italic;color:var(--muted)}
+
+/* ══════════════════════════════════════════════════════
+   ABOUT
+══════════════════════════════════════════════════════ */
+#about .about-layout{
+  display:grid;grid-template-columns:1.1fr .9fr;
+  gap:96px;align-items:start;max-width:1100px;
+  margin:0 auto;
+}
+.about-body{
+  font-size:15px;line-height:2.15;color:var(--fg2);font-weight:300;
+}
+.about-body p+p{margin-top:20px}
+.about-body strong{font-weight:500;color:var(--fg)}
+
+/* Stats */
+.about-stats{display:grid;grid-template-columns:1fr 1fr;gap:0}
+.stat-cell{
+  padding:32px 28px;
+  border:1px solid var(--border);
+  margin:-1px 0 0 -1px;
+  position:relative;overflow:hidden;
+  transition:background .3s,transform .4s cubic-bezier(.16,1,.3,1),box-shadow .4s;
+  cursor:default;
+}
+.stat-cell::before{
+  content:'';position:absolute;bottom:0;left:0;right:0;
+  height:2px;background:linear-gradient(90deg,var(--accent),transparent);
+  transform:scaleX(0);transform-origin:left;
+  transition:transform .4s cubic-bezier(.16,1,.3,1);
+}
+.stat-cell:hover{background:var(--bg-card);transform:translateY(-4px);box-shadow:var(--shadow-md)}
+.stat-cell:hover::before{transform:scaleX(1)}
+.stat-num{
+  font-family:'DM Serif Display',serif;
+  font-size:48px;font-style:italic;line-height:1;
+  color:var(--fg);letter-spacing:-.02em;
+}
+.stat-num sup{font-size:.42em;font-style:normal;color:var(--accent);vertical-align:super}
+.stat-label{
+  font-family:'Space Mono',monospace;
+  font-size:8px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--muted);margin-top:8px;
+}
+
+/* ══════════════════════════════════════════════════════
+   SKILLS
+══════════════════════════════════════════════════════ */
+.skills-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(250px,1fr));
+  gap:1px;
+  background:var(--border);
+  border:1px solid var(--border);
+  max-width:1100px;
+  margin:0 auto;
+}
+.skill-card{
+  background:var(--bg);
+  padding:40px 32px;
+  position:relative;overflow:hidden;
+  transition:background .3s;cursor:default;
+}
+/* Fill sweep on hover */
+.skill-card::after{
+  content:'';position:absolute;inset:0;
+  background:var(--fg);
+  clip-path:circle(0% at 50% 100%);
+  transition:clip-path .5s cubic-bezier(.16,1,.3,1);
+  z-index:0;
+}
+.skill-card:hover::after{clip-path:circle(150% at 50% 100%)}
+.skill-card>*{position:relative;z-index:1;transition:color .3s}
+.skill-card:hover .skill-icon{transform:scale(1.1) rotate(-8deg)}
+.skill-card:hover .skill-name,
+.skill-card:hover .skill-body{color:var(--bg)}
+.skill-card:hover .s-tag{border-color:rgba(255,255,255,.15);color:rgba(255,255,255,.5)}
+.skill-icon{font-size:28px;display:block;margin-bottom:20px;transition:transform .35s}
+.skill-name{
+  font-size:15px;font-weight:700;
+  letter-spacing:-.01em;margin-bottom:12px;color:var(--fg);
+}
+.skill-body{font-size:12px;color:var(--fg2);line-height:1.85;font-weight:300}
+.skill-tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:18px}
+.s-tag{
+  font-family:'Space Mono',monospace;font-size:8px;
+  letter-spacing:.08em;text-transform:uppercase;
+  padding:4px 9px;border:1px solid var(--border);color:var(--muted);
+  transition:border-color .3s,color .3s;
+}
+
+/* ══════════════════════════════════════════════════════
+   WORKS — 3D FLIP
+══════════════════════════════════════════════════════ */
+.works-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(270px,1fr));
+  gap:16px;max-width:1100px;
+  margin:0 auto;
+}
+.flip-wrap{perspective:1200px;height:280px;cursor:pointer}
+.flip-inner{
+  position:relative;width:100%;height:100%;
+  transform-style:preserve-3d;
+  transition:transform .7s cubic-bezier(.45,.05,.55,.95);
+  will-change:transform;
+}
+.flip-wrap.flipped .flip-inner{transform:rotateY(180deg)}
+.flip-front,.flip-back{
+  position:absolute;inset:0;backface-visibility:hidden;
+  -webkit-backface-visibility:hidden;
+  padding:36px 32px;
+  display:flex;flex-direction:column;justify-content:space-between;
+  border:1px solid var(--border);
+}
+/* FRONT */
+.flip-front{background:var(--bg-card)}
+.flip-front-top{display:flex;justify-content:space-between;align-items:flex-start}
+.flip-num{
+  font-family:'Space Mono',monospace;
+  font-size:9px;color:var(--muted);letter-spacing:.12em;
+}
+.flip-hint{
+  font-family:'Space Mono',monospace;
+  font-size:8px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--muted);display:flex;align-items:center;gap:5px;
+}
+.flip-hint-icon{
+  font-size:14px;
+  animation:spinSlow 4s linear infinite;display:inline-block;
+}
+@keyframes spinSlow{to{transform:rotate(360deg)}}
+.flip-title{
+  font-family:'DM Serif Display',serif;
+  font-size:clamp(20px,2.8vw,28px);font-style:italic;
+  letter-spacing:-.01em;line-height:1.2;
+  color:var(--fg);
+}
+.flip-badge{
+  display:inline-block;
+  font-family:'Space Mono',monospace;
+  font-size:8px;letter-spacing:.1em;text-transform:uppercase;
+  padding:4px 10px;border:1px solid var(--border);color:var(--muted);
+  margin-top:14px;
+}
+/* Accent underline on hover */
+.flip-front::after{
+  content:'';position:absolute;bottom:0;left:0;right:0;
+  height:2px;background:linear-gradient(90deg,var(--accent),transparent);
+  transform:scaleX(0);transform-origin:left;
+  transition:transform .4s cubic-bezier(.16,1,.3,1);
+}
+.flip-wrap:not(.flipped):hover .flip-front::after{transform:scaleX(1)}
+/* BACK */
+.flip-back{
+  background:var(--fg);
+  transform:rotateY(180deg);justify-content:flex-start;
+}
+.flip-back-num{
+  font-family:'Space Mono',monospace;font-size:9px;
+  color:rgba(245,244,240,.3);letter-spacing:.12em;margin-bottom:14px;
+}
+.flip-back-title{
+  font-family:'DM Serif Display',serif;
+  font-size:18px;font-style:italic;color:var(--bg);
+  margin-bottom:14px;line-height:1.3;
+}
+.flip-back-body{
+  font-size:12px;color:rgba(245,244,240,.65);
+  line-height:1.9;font-weight:300;flex:1;
+}
+.flip-back-foot{
+  margin-top:18px;
+  font-family:'Space Mono',monospace;
+  font-size:8px;letter-spacing:.12em;text-transform:uppercase;
+  color:rgba(245,244,240,.3);
+  display:flex;align-items:center;gap:6px;
+}
+
+/* ══════════════════════════════════════════════════════
+   TIMELINE
+══════════════════════════════════════════════════════ */
+.tl-outer{max-width:760px}
+.tl-item{
+  display:grid;grid-template-columns:130px 1fr;
+  gap:0 40px;
+  padding:32px 0;
+  border-bottom:1px solid var(--border2);
+  opacity:0;transform:translateY(20px);
+  transition:opacity .6s ease,transform .6s ease;
+}
+.tl-item.vis{opacity:1;transform:none}
+.tl-left{padding-top:3px}
+.tl-year{
+  font-family:'Space Mono',monospace;
+  font-size:9px;letter-spacing:.12em;color:var(--muted);
+  line-height:1.8;
+}
+.tl-co{
+  font-size:14px;font-weight:600;color:var(--fg);
+  margin-bottom:4px;letter-spacing:-.01em;
+}
+.tl-role{
+  font-family:'Space Mono',monospace;
+  font-size:8px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--accent2);margin-bottom:10px;
+}
+.tl-desc{font-size:12px;color:var(--fg2);line-height:1.9;font-weight:300}
+.tl-tag{
+  display:inline-block;margin-top:10px;
+  font-family:'Space Mono',monospace;font-size:8px;
+  letter-spacing:.08em;text-transform:uppercase;
+  padding:3px 8px;background:var(--tag-bg);color:var(--tag-fg);
+}
+
+/* ══════════════════════════════════════════════════════
+   CONTACT
+══════════════════════════════════════════════════════ */
+#contact{
+  display:grid;grid-template-columns:1fr 1fr;
+  gap:96px;align-items:start;
+  max-width:1100px;margin:0 auto;
+}
+.contact-big{
+  font-family:'DM Serif Display',serif;
+  font-size:clamp(28px,4vw,50px);font-style:italic;
+  letter-spacing:-.02em;line-height:1.2;
+  color:var(--fg);margin-bottom:44px;
+}
+/* Magnetic wechat button */
+.mag-btn-wrap{display:inline-block;position:relative}
+.mag-btn{
+  display:inline-flex;align-items:center;gap:12px;
+  padding:16px 28px;
+  background:var(--fg);color:var(--bg);
+  font-family:'Space Mono',monospace;font-size:13px;
+  border:none;cursor:none;
+  transition:box-shadow .35s;
+  position:relative;z-index:1;
+}
+.mag-btn:hover{box-shadow:0 12px 40px rgba(17,17,16,.25)}
+.mag-btn-hint{
+  font-size:10px;color:var(--muted);margin-top:9px;
+  font-family:'Space Mono',monospace;letter-spacing:.06em;
+}
+.contact-grid{border-top:1px solid var(--border2)}
+.c-row{
+  display:grid;grid-template-columns:80px 1fr;
+  gap:16px;padding:20px 0;
+  border-bottom:1px solid var(--border2);
+  transition:padding-left .2s;
+}
+.c-row:hover{padding-left:6px}
+.c-key{
+  font-family:'Space Mono',monospace;
+  font-size:8px;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--muted);padding-top:2px;
+}
+.c-val{font-size:14px;font-weight:500;color:var(--fg)}
+.c-note{font-size:10px;color:var(--muted);margin-top:3px}
+
+/* ══════════════════════════════════════════════════════
+   FOOTER
+══════════════════════════════════════════════════════ */
+footer{
+  padding:32px max(72px, calc((100vw - 1240px) / 2));
+  display:flex;justify-content:space-between;align-items:center;
+  border-top:1px solid var(--border2);z-index:1;position:relative;
+}
+.foot{
+  font-family:'Space Mono',monospace;
+  font-size:9px;letter-spacing:.1em;color:var(--muted);
+}
+
+/* ══════════════════════════════════════════════════════
+   TOAST
+══════════════════════════════════════════════════════ */
+.toast{
+  position:fixed;bottom:36px;left:50%;
+  transform:translateX(-50%) translateY(18px);
+  background:var(--fg);color:var(--bg);
+  font-family:'Space Mono',monospace;
+  font-size:10px;padding:10px 22px;
+  opacity:0;pointer-events:none;z-index:9990;
+  letter-spacing:.08em;
+  transition:opacity .3s,transform .3s;
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ══════════════════════════════════════════════════════
+   REVEAL — clip-path wipe (premium vs plain fadeUp)
+══════════════════════════════════════════════════════ */
+.rv{
+  opacity:0;transform:translateY(28px);
+  transition:opacity .85s cubic-bezier(.16,1,.3,1),transform .85s cubic-bezier(.16,1,.3,1);
+}
+.rv.vis{opacity:1;transform:none}
+.rv-d1{transition-delay:.09s}.rv-d2{transition-delay:.18s}
+.rv-d3{transition-delay:.27s}.rv-d4{transition-delay:.36s}
+
+/* Section title: clip-path horizontal wipe */
+.sec-title{
+  clip-path:inset(0 100% 0 0);
+  transition:clip-path .9s cubic-bezier(.16,1,.3,1) .1s,
+             color .4s;
+}
+.sec-title.vis{clip-path:inset(0 0% 0 0)}
+
+/* stagger grid children */
+.stagger-grid>*{
+  opacity:0;transform:translateY(22px);
+  transition:opacity .65s cubic-bezier(.16,1,.3,1),transform .65s cubic-bezier(.16,1,.3,1);
+}
+.stagger-grid.vis>*:nth-child(1){opacity:1;transform:none;transition-delay:.05s}
+.stagger-grid.vis>*:nth-child(2){opacity:1;transform:none;transition-delay:.12s}
+.stagger-grid.vis>*:nth-child(3){opacity:1;transform:none;transition-delay:.19s}
+.stagger-grid.vis>*:nth-child(4){opacity:1;transform:none;transition-delay:.26s}
+
+/* ── Timeline self-drawing vertical line ── */
+.tl-outer{
+  position:relative;
+  max-width:760px;
+  margin:0 auto;
+}
+.tl-outer::before{
+  content:'';
+  position:absolute;left:0;top:0;
+  width:1px;
+  background:linear-gradient(to bottom, var(--accent), var(--border2));
+  height:0;
+  transition:height 1.8s cubic-bezier(.16,1,.3,1);
+  z-index:0;
+}
+.tl-outer.line-vis::before{height:100%}
+.tl-item{padding-left:20px}
+
+/* ── Cursor gold trail ── */
+.c-trail{
+  position:fixed;border-radius:50%;
+  pointer-events:none;z-index:9996;
+  transform:translate(-50%,-50%);
+  background:var(--accent);
+  animation:trailFade .5s ease forwards;
+}
+@keyframes trailFade{
+  0%{opacity:.55;width:5px;height:5px}
+  100%{opacity:0;width:2px;height:2px}
+}
+
+/* ── Easter egg overlay ── */
+#egg{
+  position:fixed;inset:0;z-index:9500;
+  background:rgba(17,17,16,.92);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:18px;
+  opacity:0;pointer-events:none;
+  transition:opacity .5s ease;
+}
+#egg.show{opacity:1;pointer-events:all}
+.egg-emoji{font-size:52px;animation:eggBounce .6s ease infinite alternate}
+@keyframes eggBounce{from{transform:translateY(0)}to{transform:translateY(-10px)}}
+.egg-text{
+  font-family:'DM Serif Display',serif;
+  font-size:clamp(20px,3.5vw,32px);font-style:italic;
+  color:#f5f4f0;letter-spacing:-.01em;text-align:center;line-height:1.4;
+}
+.egg-sub{
+  font-family:'Space Mono',monospace;
+  font-size:9px;letter-spacing:.22em;text-transform:uppercase;
+  color:var(--accent);margin-top:4px;
+}
+.egg-close{
+  margin-top:20px;
+  font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.18em;
+  text-transform:uppercase;color:rgba(245,244,240,.4);
+  background:none;border:none;cursor:pointer;
+  transition:color .2s;
+}
+.egg-close:hover{color:rgba(245,244,240,.8)}
+
+/* ── Nav logo click hint ── */
+.nav-logo{cursor:pointer;user-select:none}
+.nav-logo .logo-counter{
+  font-family:'Space Mono',monospace;font-size:8px;
+  color:var(--accent);letter-spacing:.06em;
+  opacity:0;transition:opacity .3s;margin-left:4px;
+  vertical-align:middle;
+}
+.nav-logo.counting .logo-counter{opacity:1}
+
+/* ══════════════════════════════════════════════════════
+   MOBILE
+══════════════════════════════════════════════════════ */
+@media(max-width:768px){
+  nav{padding:15px 20px}
+  .nav-links li:nth-child(-n+2){display:none}
+  section{padding:80px 24px}
+  #about .about-layout,#contact{grid-template-columns:1fr;gap:56px}
+  footer{padding:24px 20px;flex-direction:column;gap:8px;text-align:center}
+  #c-dot,#c-ring{display:none}
+  body{cursor:auto}
+  #ball,#lens{width:160px;height:160px}
+  #lens-inner{font-size:clamp(40px,9vw,128px)}
+  .works-grid,.skills-grid{grid-template-columns:1fr}
+  .tl-item{grid-template-columns:1fr;gap:6px}
+  .hero-badge{display:none}
+}
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}
+}
+</style>
+</head>
+<body>
+
+<!-- Loader -->
+<div id="loader">
+  <div class="loader-name" id="loader-name">C · B · H</div>
+  <div class="loader-bar-wrap"><div class="loader-bar"></div></div>
+  <div class="loader-pct" id="loader-pct">0%</div>
+</div>
+
+<!-- Easter egg overlay -->
+<div id="egg">
+  <div class="egg-emoji">🎉</div>
+  <div class="egg-text" id="egg-text">你找到了彩蛋</div>
+  <div class="egg-sub" id="egg-sub">连续点击 Logo 三次触发</div>
+  <button class="egg-close" id="egg-close" onclick="closeEgg()">× 关闭</button>
+</div>
+
+<div id="prog"></div>
+<div id="c-dot"></div>
+<div id="c-ring"></div>
+
+<!-- Ball -->
+<div id="ball"></div>
+<div id="lens">
+  <div id="lens-inner">你好，我是<em>程</em></div>
+  <div id="lens-meta">新媒体运营 / 视频剪辑 / 前端 / 音乐</div>
+</div>
+
+<div class="toast" id="toast">✓ 已复制微信号</div>
+
+<!-- Nav -->
+<nav>
+  <div class="nav-logo" id="nav-logo"><div class="nav-logo-dot"></div>CBH<span class="logo-counter" id="logo-counter"></span></div>
+  <ul class="nav-links">
+    <li><a href="#about"    data-zh="关于"  data-en="About">关于</a></li>
+    <li><a href="#skills"   data-zh="技能"  data-en="Skills">技能</a></li>
+    <li><a href="#works"    data-zh="作品"  data-en="Works">作品</a></li>
+    <li><a href="#timeline" data-zh="经历"  data-en="Timeline">经历</a></li>
+    <li><a href="#contact"  data-zh="联系"  data-en="Contact">联系</a></li>
+    <li><button id="lang-btn">EN</button></li>
+  </ul>
+</nav>
+
+<!-- Hero -->
+<section id="hero">
+  <div id="hero-grain"></div>
+  <div class="hero-badge hero-badge-tl rv" style="transition-delay:.9s">
+    <span id="hb-tl">新媒体运营 · 2年经验</span>
+  </div>
+  <div class="hero-eyebrow" id="hero-eyebrow">Portfolio · 2025</div>
+  <div class="hero-title-wrap" id="heroTitle">
+    <span class="hero-display" id="hero-scramble"><span class="hero-hello">HELLO, I'M </span><em id="hero-name">Cheng</em></span>
+    <div class="hero-divider"></div>
+    <span class="hero-sub" id="hero-sub">新媒体运营 / 视频剪辑 / 前端设计 / 音乐编曲</span>
+  </div>
+  <div class="hero-badge hero-badge-br rv" style="transition-delay:1.1s">
+    <span id="hb-br">兰州 · 期望薪资 7-9K</span>
+  </div>
+  <div class="hero-caret"></div>
+  <div class="hero-hint" id="heroHint">
+    <span></span>移动鼠标探索 · 向下滚动查看更多<span>
+  </div>
+</section>
+
+<!-- About -->
+<section id="about">
+  <div class="sec-eyebrow rv">001 / About</div>
+  <div class="about-layout">
+    <div>
+      <h2 class="sec-title rv rv-d1" id="about-title">用创作<br><em>定义自己</em></h2>
+      <div class="about-body rv rv-d2" id="about-body">
+        <p>你好，我是<strong>程博辉</strong>。男，23岁，坐标兰州，2年新媒体运营经验。</p>
+        <p>我横跨新媒体运营、视频拍摄剪辑、前端网页设计、H5游戏制作与音乐编曲录音等多个领域，服务过抖音、小红书、快手等主流平台的商家客户。</p>
+        <p>我相信好的内容不只是信息的传递，更是体验的设计。一段视频、一个网页、一段旋律，都可以成为真正打动人的作品。</p>
+      </div>
+    </div>
+    <div class="about-stats stagger-grid">
+      <div class="stat-cell">
+        <div class="stat-num" data-count="2" data-suffix="+">2<sup>+</sup></div>
+        <div class="stat-label" data-zh="年运营经验" data-en="Yrs Experience">年运营经验</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-num" data-count="500" data-suffix="万+">500<sup>万+</sup></div>
+        <div class="stat-label" data-zh="单条视频播放" data-en="Video Views">单条视频播放</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-num" data-count="10" data-suffix="万+">10<sup>万+</sup></div>
+        <div class="stat-label" data-zh="3个月涨粉" data-en="3-Month Growth">3个月涨粉</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-num">H5</div>
+        <div class="stat-label" data-zh="游戏 & 前端" data-en="Game & Frontend">游戏 & 前端</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Skills -->
+<section id="skills">
+  <div class="sec-eyebrow rv">002 / Skills</div>
+  <h2 class="sec-title rv rv-d1" id="skills-title">我能做什么</h2>
+  <div class="skills-grid stagger-grid rv">
+    <div class="skill-card">
+      <span class="skill-icon">📱</span>
+      <div class="skill-name" data-zh="新媒体运营" data-en="Social Media Ops">新媒体运营</div>
+      <div class="skill-body" data-zh="内容策划、账号搭建、短视频分发与数据分析。熟悉抖音、小红书、快手、美团等平台生态，有直播运营、场控及主播培训经验。" data-en="Content planning, account building, short video distribution and data analytics. Proficient in TikTok, Xiaohongshu, Kuaishou and Meituan ecosystems, with live-stream operations and host training experience.">内容策划、账号搭建、短视频分发与数据分析。熟悉抖音、小红书、快手、美团等平台生态，有直播运营、场控及主播培训经验。</div>
+      <div class="skill-tags">
+        <span class="s-tag" data-zh="抖音" data-en="TikTok">抖音</span>
+        <span class="s-tag" data-zh="小红书" data-en="Xiaohongshu">小红书</span>
+        <span class="s-tag" data-zh="快手" data-en="Kuaishou">快手</span>
+        <span class="s-tag" data-zh="直播运营" data-en="Live Ops">直播运营</span>
+        <span class="s-tag" data-zh="数据分析" data-en="Analytics">数据分析</span>
+      </div>
+    </div>
+    <div class="skill-card">
+      <span class="skill-icon">🎬</span>
+      <div class="skill-name" data-zh="视频拍摄 & 剪辑" data-en="Video Production">视频拍摄 & 剪辑</div>
+      <div class="skill-body" data-zh="独立完成短视频从策划到拍摄、剪辑全流程。使用 After Effects 制作动态数据可视化，单条爆款视频播放量破500万+。" data-en="End-to-end short video production from planning to shooting and editing. Used After Effects for dynamic data visualization; single viral video hit 5M+ views.">独立完成短视频从策划到拍摄、剪辑全流程。使用 After Effects 制作动态数据可视化，单条爆款视频播放量破500万+。</div>
+      <div class="skill-tags">
+        <span class="s-tag" data-zh="剪映" data-en="JianYing">剪映</span>
+        <span class="s-tag">After Effects</span>
+        <span class="s-tag" data-zh="口播视频" data-en="Talking Head">口播视频</span>
+        <span class="s-tag" data-zh="短视频" data-en="Short Video">短视频</span>
+      </div>
+    </div>
+    <div class="skill-card">
+      <span class="skill-icon">💻</span>
+      <div class="skill-name" data-zh="前端设计 & H5游戏" data-en="Frontend & H5 Game">前端设计 & H5游戏</div>
+      <div class="skill-body" data-zh="网页前端开发与视觉设计，H5网页游戏制作。具备平面设计基础，可独立完成海报、VI、宣传物料等设计工作。" data-en="Frontend web development, visual design and H5 web game creation. Skilled in poster, VI and full promotional material design.">网页前端开发与视觉设计，H5网页游戏制作。具备平面设计基础，可独立完成海报、VI、宣传物料等设计工作。</div>
+      <div class="skill-tags">
+        <span class="s-tag">HTML5</span>
+        <span class="s-tag">JavaScript</span>
+        <span class="s-tag" data-zh="H5游戏" data-en="H5 Game">H5游戏</span>
+        <span class="s-tag" data-zh="平面设计" data-en="Graphic Design">平面设计</span>
+      </div>
+    </div>
+    <div class="skill-card">
+      <span class="skill-icon">🎵</span>
+      <div class="skill-name" data-zh="音乐编曲 & 录音" data-en="Music & Recording">音乐编曲 & 录音</div>
+      <div class="skill-body" data-zh="音乐编曲、音频录制、降噪处理与混音调音，为内容创作提供专业级声音支持。" data-en="Music composition, audio recording, noise reduction and mixing. Delivers professional-grade audio solutions for content creation and brand campaigns.">音乐编曲、音频录制、降噪处理与混音调音，为内容创作提供专业级声音支持。</div>
+      <div class="skill-tags">
+        <span class="s-tag" data-zh="编曲" data-en="Composition">编曲</span>
+        <span class="s-tag" data-zh="录音" data-en="Recording">录音</span>
+        <span class="s-tag" data-zh="混音" data-en="Mixing">混音</span>
+        <span class="s-tag" data-zh="音频后期" data-en="Audio Post">音频后期</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Works -->
+<section id="works">
+  <div class="sec-eyebrow rv">003 / Works</div>
+  <h2 class="sec-title rv rv-d1" id="works-title">代表作品</h2>
+  <div class="works-grid stagger-grid">
+    <div class="flip-wrap">
+      <div class="flip-inner">
+        <div class="flip-front">
+          <div class="flip-front-top">
+            <span class="flip-num">001</span>
+            <span class="flip-hint"><span class="flip-hint-icon">↺</span> <span data-zh="点击翻转" data-en="tap to flip">点击翻转</span></span>
+          </div>
+          <div>
+            <div class="flip-title" data-zh="抖音爆款<br>短视频矩阵" data-en="TikTok Viral<br>Video Matrix">抖音爆款<br>短视频矩阵</div>
+            <span class="flip-badge" data-zh="新媒体运营" data-en="Social Media">新媒体运营</span>
+          </div>
+        </div>
+        <div class="flip-back">
+          <div class="flip-back-num">001</div>
+          <div class="flip-back-title" data-zh="抖音爆款短视频矩阵" data-en="TikTok Viral Video Matrix">抖音爆款短视频矩阵</div>
+          <div class="flip-back-body" data-zh="策划制作理财知识科普短视频，运用 AE 制作动态数据可视化素材，单条爆款播放量破500万+。搭建金融产品智能分发体系，抖音作品浏览率88.6%，超行业均值7.2pts。日均产出80+有效客户资产，支撑销售团队35%业绩来源。" data-en="Planned finance-education short videos with AE data visualizations. Single viral video hit 5M+ views. Built smart distribution system achieving 88.6% browse rate (+7.2pts vs industry). Delivered 80+ qualified leads daily, driving 35% of sales team revenue.">策划制作理财知识科普短视频，运用 AE 制作动态数据可视化素材，单条爆款播放量破500万+。搭建金融产品智能分发体系，抖音作品浏览率88.6%，超行业均值7.2pts。日均产出80+有效客户资产，支撑销售团队35%业绩来源。</div>
+          <div class="flip-back-foot" data-zh="再次点击关闭" data-en="tap to close">↺ 再次点击关闭</div>
+        </div>
+      </div>
+    </div>
+    <div class="flip-wrap">
+      <div class="flip-inner">
+        <div class="flip-front">
+          <div class="flip-front-top">
+            <span class="flip-num">002</span>
+            <span class="flip-hint"><span class="flip-hint-icon">↺</span> <span data-zh="点击翻转" data-en="tap to flip">点击翻转</span></span>
+          </div>
+          <div>
+            <div class="flip-title" data-zh="直播运营<br>乐瑞传媒" data-en="Live Stream<br>Operations">直播运营<br>乐瑞传媒</div>
+            <span class="flip-badge" data-zh="直播运营" data-en="Live Streaming">直播运营</span>
+          </div>
+        </div>
+        <div class="flip-back">
+          <div class="flip-back-num">002</div>
+          <div class="flip-back-title" data-zh="直播运营 · 乐瑞传媒" data-en="Live Ops · LeRui Media">直播运营 · 乐瑞传媒</div>
+          <div class="flip-back-body" data-zh="担任直播运营、场控、设计、策划全岗位。一周带30+主播上播，总业绩超过2700万，同时一天纳新200+粉丝。负责培训主播、检查直播各项设备，全面运营直播间。" data-en="Served as live stream operator, director, designer and strategist. Trained 30+ streamers per week, achieved ¥27M+ in total sales and 200+ new followers daily. Managed all equipment checks and full live room operations.">担任直播运营、场控、设计、策划全岗位。一周带30+主播上播，总业绩超过2700万，同时一天纳新200+粉丝。负责培训主播、检查直播各项设备，全面运营直播间。</div>
+          <div class="flip-back-foot" data-zh="再次点击关闭" data-en="tap to close">↺ 再次点击关闭</div>
+        </div>
+      </div>
+    </div>
+    <div class="flip-wrap">
+      <div class="flip-inner">
+        <div class="flip-front">
+          <div class="flip-front-top">
+            <span class="flip-num">003</span>
+            <span class="flip-hint"><span class="flip-hint-icon">↺</span> <span data-zh="点击翻转" data-en="tap to flip">点击翻转</span></span>
+          </div>
+          <div>
+            <div class="flip-title" data-zh="H5游戏<br>& 前端设计" data-en="H5 Game<br>& Frontend">H5游戏<br>& 前端设计</div>
+            <span class="flip-badge" data-zh="开发中" data-en="In Progress">开发中</span>
+          </div>
+        </div>
+        <div class="flip-back">
+          <div class="flip-back-num">003</div>
+          <div class="flip-back-title" data-zh="H5网页游戏 & 前端设计" data-en="H5 Game & Frontend Design">H5网页游戏 & 前端设计</div>
+          <div class="flip-back-body" data-zh="独立制作 H5 网页游戏与前端视觉设计，覆盖 UI 设计、交互逻辑、动效实现全流程。具备平面设计基础，可独立完成海报、VI、宣传物料等设计工作。" data-en="Independently built H5 web games and frontend visuals, covering UI design, interaction logic and animation. Skilled in poster, VI and promotional material design.">独立制作 H5 网页游戏与前端视觉设计，覆盖 UI 设计、交互逻辑、动效实现全流程。具备平面设计基础，可独立完成海报、VI、宣传物料等设计工作。</div>
+          <div class="flip-back-foot" data-zh="再次点击关闭" data-en="tap to close">↺ 再次点击关闭</div>
+        </div>
+      </div>
+    </div>
+    <div class="flip-wrap">
+      <div class="flip-inner">
+        <div class="flip-front">
+          <div class="flip-front-top">
+            <span class="flip-num">004</span>
+            <span class="flip-hint"><span class="flip-hint-icon">↺</span> <span data-zh="点击翻转" data-en="tap to flip">点击翻转</span></span>
+          </div>
+          <div>
+            <div class="flip-title" data-zh="音乐编曲<br>& 录音制作" data-en="Music Composition<br>& Recording">音乐编曲<br>& 录音制作</div>
+            <span class="flip-badge" data-zh="整理中" data-en="Compiling">整理中</span>
+          </div>
+        </div>
+        <div class="flip-back">
+          <div class="flip-back-num">004</div>
+          <div class="flip-back-title" data-zh="音乐编曲 & 录音作品" data-en="Music Composition & Recording">音乐编曲 & 录音作品</div>
+          <div class="flip-back-body" data-zh="原创音乐编曲与录音制作，涵盖音频录制、降噪处理与混音调音全流程，服务于视频内容制作及品牌宣传，提供完整声音解决方案。" data-en="Original composition and audio production covering recording, noise reduction and mixing. Delivers complete audio solutions for video content and brand campaigns.">原创音乐编曲与录音制作，涵盖音频录制、降噪处理与混音调音全流程，服务于视频内容制作及品牌宣传，提供完整声音解决方案。</div>
+          <div class="flip-back-foot" data-zh="再次点击关闭" data-en="tap to close">↺ 再次点击关闭</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Timeline -->
+<section id="timeline">
+  <div class="sec-eyebrow rv">004 / Experience</div>
+  <h2 class="sec-title rv rv-d1" id="tl-title">工作经历</h2>
+  <div class="tl-outer">
+    <div class="tl-item">
+      <div class="tl-left"><div class="tl-year">2026.01<br>2026.04</div></div>
+      <div>
+        <div class="tl-co" data-zh="甘肃莘知教育科技有限公司" data-en="Gansu Xinzhi Education Technology">甘肃莘知教育科技有限公司</div>
+        <div class="tl-role" data-zh="运营部科长" data-en="Head of Operations">运营部科长</div>
+        <div class="tl-desc" data-zh="主导抖音、小红书平台付费投放策略规划与内容矩阵搭建，统筹选题策划、脚本撰写及视频制作全流程；全面负责直播运营管理，涵盖主播培训、场控执行、话术优化及数据复盘，推动账号持续增长与转化提升。" data-en="Led paid advertising strategy and content matrix development on TikTok and Xiaohongshu, overseeing the full pipeline from topic planning and scriptwriting to video production. Managed all aspects of live-stream operations including host training, on-site direction, script optimization and data review to drive sustained account growth and conversions.">主导抖音、小红书平台付费投放策略规划与内容矩阵搭建，统筹选题策划、脚本撰写及视频制作全流程；全面负责直播运营管理，涵盖主播培训、场控执行、话术优化及数据复盘，推动账号持续增长与转化提升。</div>
+        <span class="tl-tag" data-zh="投放 · 内容 · 直播" data-en="Ads · Content · Live">投放 · 内容 · 直播</span>
+      </div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-left"><div class="tl-year">2025.10<br>2025.12</div></div>
+      <div>
+        <div class="tl-co" data-zh="甘肃金标尺教育科技有限公司" data-en="Gansu Jinbiaochi Education Technology">甘肃金标尺教育科技有限公司</div>
+        <div class="tl-role" data-zh="新媒体运营" data-en="Social Media Operator">新媒体运营</div>
+        <div class="tl-desc" data-zh="负责小红书和抖音账号运营、抖音直播考试内容、拍摄口播视频。" data-en="Managed Xiaohongshu and TikTok accounts, hosted live exam content, and filmed talking-head videos.">负责小红书和抖音账号运营、抖音直播考试内容、拍摄口播视频。</div>
+      </div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-left"><div class="tl-year">2025.04<br>2025.09</div></div>
+      <div>
+        <div class="tl-co" data-zh="兰州乐瑞传媒有限公司" data-en="Lanzhou LeRui Media">兰州乐瑞传媒有限公司</div>
+        <div class="tl-role" data-zh="新媒体运营" data-en="Social Media Operations">新媒体运营</div>
+        <div class="tl-desc" data-zh="担任直播运营、场控、设计、策划。一周带30+主播，总业绩超过2700万，同时一天纳新200+。" data-en="Served as live stream operator, director, designer, and strategist. Trained 30+ streamers per week, ¥27M+ total revenue, 200+ new followers per day.">担任直播运营、场控、设计、策划。一周带30+主播，总业绩超过2700万，同时一天纳新200+。</div>
+        <span class="tl-tag" data-zh="业绩：2700万+" data-en="Revenue: ¥27M+">业绩：2700万+</span>
+      </div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-left"><div class="tl-year">2024.11<br>2025.02</div></div>
+      <div>
+        <div class="tl-co" data-zh="甘肃盛源嘉安全技术咨询有限公司" data-en="Gansu Shengyuan Jia Safety Consulting">甘肃盛源嘉安全技术咨询有限公司</div>
+        <div class="tl-role" data-zh="新媒体运营" data-en="Social Media Operations">新媒体运营</div>
+        <div class="tl-desc" data-zh="策划制作理财知识科普短视频矩阵，运用 AE 制作动态数据可视化，单条爆款视频播放量破500万+。抖音运营3个月涨粉10万+，粉丝投资转化率4.7%。" data-en="Produced finance education short video matrix with AE data visualizations. Single viral video hit 5M+ views. Grew 100K+ followers in 3 months, 4.7% investment conversion rate.">策划制作理财知识科普短视频矩阵，运用 AE 制作动态数据可视化，单条爆款视频播放量破500万+。抖音运营3个月涨粉10万+，粉丝投资转化率4.7%。</div>
+        <span class="tl-tag" data-zh="播放量：500万+" data-en="Views: 5M+">播放量：500万+</span>
+      </div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-left"><div class="tl-year">2024.02<br>2024.11</div></div>
+      <div>
+        <div class="tl-co" data-zh="甘肃星之火网络科技有限公司" data-en="Gansu Star Fire Network Technology">甘肃星之火网络科技有限公司</div>
+        <div class="tl-role" data-zh="新媒体运营专员" data-en="Social Media Specialist">新媒体运营专员</div>
+        <div class="tl-desc" data-zh="负责美团、婚礼纪、小红书的账号搭建及后续运营。对各平台访问量、转化率、粉丝互动等数据收集分析，制定营销策略并持续优化。" data-en="Built and operated accounts on Meituan, Wedding365, and Xiaohongshu. Collected and analyzed platform data to develop and optimize marketing strategies.">负责美团、婚礼纪、小红书的账号搭建及后续运营。对各平台访问量、转化率、粉丝互动等数据收集分析，制定营销策略并持续优化。</div>
+      </div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-left"><div class="tl-year">2023.10<br>2024.08</div></div>
+      <div>
+        <div class="tl-co" data-zh="甘肃容和文化发展有限公司" data-en="Gansu Ronghe Culture Development">甘肃容和文化发展有限公司</div>
+        <div class="tl-role" data-zh="新媒体" data-en="New Media">新媒体</div>
+        <div class="tl-desc" data-zh="负责外出拍摄、剪辑甲方视频；负责公司日常平面设计（直播团购封面、公司简介、书刊等）；运营公司私域微信，一天推广5-6k。" data-en="Shot and edited client videos; handled daily graphic design work including live-stream covers and company branding; operated WeChat private domain reaching 5–6K daily.">负责外出拍摄、剪辑甲方视频；负责公司日常平面设计（直播团购封面、公司简介、书刊等）；运营公司私域微信，一天推广5-6k。</div>
+      </div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-left"><div class="tl-year">2023.06<br>2023.10</div></div>
+      <div>
+        <div class="tl-co" data-zh="甘肃冰狐广告设计有限公司" data-en="Gansu Binghu Advertising Design">甘肃冰狐广告设计有限公司</div>
+        <div class="tl-role" data-zh="平面设计" data-en="Graphic Designer">平面设计</div>
+        <div class="tl-desc" data-zh="全流程执行企业级印刷项目，年均交付1200+设计案，涵盖VI手册、产品包装、展会物料等，客户复购率达83%。优化纸张开料算法，年度节约耗材成本12万元。" data-en="Executed enterprise print projects, delivering 1200+ designs annually including VI manuals, packaging and exhibition materials with 83% client retention. Optimized paper-cutting algorithm saving ¥120K/year.">全流程执行企业级印刷项目，年均交付1200+设计案，涵盖VI手册、产品包装、展会物料等，客户复购率达83%。优化纸张开料算法，年度节约耗材成本12万元。</div>
+      </div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-left"><div class="tl-year">2022.06<br>2023.05</div></div>
+      <div>
+        <div class="tl-co" data-zh="甘肃灵泊文化娱乐有限公司" data-en="Gansu Lingbo Culture & Entertainment">甘肃灵泊文化娱乐有限公司</div>
+        <div class="tl-role" data-zh="平面设计" data-en="Visual Designer">平面设计</div>
+        <div class="tl-desc" data-zh="负责密室主题全案视觉设计，独立完成12+套风格化宣传物料设计，季度宣传物料点击量提升40%。主导3个大型密室场景全流程制作（涵盖主题墙绘500㎡+）。推动玩家复购率提升35%，相关主题登上本地生活类APP热搜榜TOP3。" data-en="Designed full visual identity for escape room themes; completed 12+ styled promotional materials with 40% click uplift. Led production of 3 large-scale sets (500㎡+). Boosted repeat visit rate by 35%, ranked TOP3 on local lifestyle app hot search.">负责密室主题全案视觉设计，独立完成12+套风格化宣传物料设计，季度宣传物料点击量提升40%。主导3个大型密室场景全流程制作（涵盖主题墙绘500㎡+）。推动玩家复购率提升35%，相关主题登上本地生活类APP热搜榜TOP3。</div>
+        <span class="tl-tag" data-zh="复购率+35%" data-en="Repeat rate +35%">复购率+35%</span>
+      </div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-left"><div class="tl-year">2019<br>2023</div></div>
+      <div>
+        <div class="tl-co" data-zh="甘肃建筑职业技术学院" data-en="Gansu Construction Vocational College">甘肃建筑职业技术学院</div>
+        <div class="tl-role" data-zh="视觉传达设计 · 大专" data-en="Visual Communication Design · Associate">视觉传达设计 · 大专</div>
+        <div class="tl-desc" data-zh="视觉传达设计专业，系统学习平面设计、品牌视觉与数字媒体创作。" data-en="Studied visual communication design, brand identity and digital media creation.">视觉传达设计专业，系统学习平面设计、品牌视觉与数字媒体创作。</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Contact -->
+<section id="contact">
+  <div>
+    <div class="sec-eyebrow rv">005 / Contact</div>
+    <div class="contact-big rv rv-d1" id="contact-cta">有想法？<br><em>来找我聊聊。</em></div>
+    <div class="mag-btn-wrap rv rv-d2">
+      <button class="mag-btn" id="wechat-btn" onclick="copyWechat()">
+        <span>💬</span><span id="wechat-label">KXYD0310</span>
+      </button>
+    </div>
+    <div class="mag-btn-hint rv rv-d3" id="wechat-hint">点击复制微信号</div>
+  </div>
+  <div class="contact-grid rv rv-d2">
+    <div class="c-row">
+      <span class="c-key" data-zh="微信" data-en="WeChat">微信</span>
+      <div><div class="c-val">KXYD0310</div><div class="c-note" data-zh="添加时请备注来意" data-en="Please note your purpose">添加时请备注来意</div></div>
+    </div>
+    <div class="c-row">
+      <span class="c-key" data-zh="邮箱" data-en="Email">邮箱</span>
+      <div><div class="c-val">2497978372@qq.com</div><div class="c-note" data-zh="工作合作欢迎邮件联系" data-en="Welcome work collaboration emails">工作合作欢迎邮件联系</div></div>
+    </div>
+    <div class="c-row">
+      <span class="c-key" data-zh="期望薪资" data-en="Salary">期望薪资</span>
+      <div><div class="c-val" data-zh="7,000 — 9,000 元/月" data-en="¥7,000 — ¥9,000 / mo">7,000 — 9,000 元/月</div><div class="c-note" data-zh="期望城市：兰州" data-en="Target city: Lanzhou">期望城市：兰州</div></div>
+    </div>
+    <div class="c-row">
+      <span class="c-key" data-zh="基本信息" data-en="Profile">基本信息</span>
+      <div><div class="c-val" data-zh="2年新媒体运营经验" data-en="2 Yrs New Media Experience">2年新媒体运营经验</div><div class="c-note" data-zh="男 · 23岁 · 兰州" data-en="Male · Age 23 · Lanzhou">男 · 23岁 · 兰州</div></div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="foot" id="foot-l">© 2025 程博辉 · CBH</div>
+  <div class="foot">MADE WITH ♡</div>
+</footer>
+
+<script>
+// ══════════════════════════════════════════════
+//  LOADER
+// ══════════════════════════════════════════════
+const loaderEl = document.getElementById('loader');
+const loaderPct = document.getElementById('loader-pct');
+let pct = 0;
+const loaderTimer = setInterval(() => {
+  pct += Math.random() * 18;
+  if (pct >= 100) { pct = 100; clearInterval(loaderTimer); }
+  loaderPct.textContent = Math.floor(pct) + '%';
+}, 80);
+
+window.addEventListener('load', () => {
+  setTimeout(() => {
+    loaderEl.classList.add('hide');
+  }, 1700);
+});
+
+// ══════════════════════════════════════════════
+//  SCROLL PROGRESS
+// ══════════════════════════════════════════════
+const progBar = document.getElementById('prog');
+window.addEventListener('scroll', () => {
+  const p = window.scrollY / (document.body.scrollHeight - window.innerHeight) * 100;
+  progBar.style.width = Math.min(p,100) + '%';
+}, {passive:true});
+
+// ══════════════════════════════════════════════
+//  CURSOR
+// ══════════════════════════════════════════════
+const dot = document.getElementById('c-dot');
+const ring = document.getElementById('c-ring');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove', e => {
+  mx = e.clientX; my = e.clientY;
+  dot.style.left = mx+'px'; dot.style.top = my+'px';
+});
+function animRing(){
+  rx += (mx-rx)*.12; ry += (my-ry)*.12;
+  ring.style.left = rx+'px'; ring.style.top = ry+'px';
+  requestAnimationFrame(animRing);
+}
+animRing();
+document.querySelectorAll('a,button,.flip-wrap,.skill-card,.stat-cell,.c-row').forEach(el=>{
+  el.addEventListener('mouseenter',()=>document.body.classList.add('cursor-hover'));
+  el.addEventListener('mouseleave',()=>document.body.classList.remove('cursor-hover'));
+});
+
+// ── Gold cursor trail ──
+let lastTrailX=0,lastTrailY=0;
+document.addEventListener('mousemove',e=>{
+  const dist=Math.hypot(e.clientX-lastTrailX,e.clientY-lastTrailY);
+  if(dist<18) return; // throttle by distance
+  lastTrailX=e.clientX; lastTrailY=e.clientY;
+  const t=document.createElement('div');
+  const sz=3+Math.random()*3;
+  t.className='c-trail';
+  t.style.cssText=`left:${e.clientX}px;top:${e.clientY}px;width:${sz}px;height:${sz}px;`;
+  document.body.appendChild(t);
+  setTimeout(()=>t.remove(),520);
+});
+
+// ══════════════════════════════════════════════
+//  EASTER EGG — triple click logo
+// ══════════════════════════════════════════════
+const navLogo=document.getElementById('nav-logo');
+const eggEl=document.getElementById('egg');
+const logoCounter=document.getElementById('logo-counter');
+let eggClicks=0, eggTimer=null;
+const eggMsgs=[
+  {emoji:'🎉', zh:'你找到了彩蛋', en:'You found the easter egg'},
+  {emoji:'🚀', zh:'你以为有第二个？', en:'Did you expect a second one?'},
+  {emoji:'✨', zh:'彩蛋已用完，请联系程博辉补货', en:'Egg depleted. Contact Cheng Bohui for restock.'},
+];
+let eggRound=0;
+
+navLogo.addEventListener('click',()=>{
+  eggClicks++;
+  clearTimeout(eggTimer);
+  if(eggClicks===1){
+    navLogo.classList.add('counting');
+    logoCounter.textContent='·';
+  } else if(eggClicks===2){
+    logoCounter.textContent='··';
+  }
+  if(eggClicks>=3){
+    navLogo.classList.remove('counting');
+    logoCounter.textContent='';
+    eggClicks=0;
+    const msg=eggMsgs[eggRound%eggMsgs.length]; eggRound++;
+    document.getElementById('egg-text').textContent=msg[isEN?'en':'zh'];
+    document.querySelector('.egg-emoji').textContent=msg.emoji;
+    document.getElementById('egg-sub').textContent=isEN?'Triple-click logo to trigger':'连续点击 Logo 三次触发';
+    document.getElementById('egg-close').textContent=isEN?'× Close':'× 关闭';
+    eggEl.classList.add('show');
+    particles(navLogo.getBoundingClientRect().left+40, navLogo.getBoundingClientRect().bottom+10, 20);
+    return;
+  }
+  eggTimer=setTimeout(()=>{
+    eggClicks=0;
+    navLogo.classList.remove('counting');
+    logoCounter.textContent='';
+  },900);
+});
+
+function closeEgg(){
+  eggEl.classList.remove('show');
+}
+document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeEgg(); });
+
+// ══════════════════════════════════════════════
+//  HERO SCRAMBLE TEXT
+// ══════════════════════════════════════════════
+const CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+function scramble(el, finalText, duration=1200, delay=400) {
+  const chars = CHARS;
+  let start = null;
+  const orig = finalText;
+  setTimeout(() => {
+    function frame(ts) {
+      if (!start) start = ts;
+      const progress = Math.min((ts - start) / duration, 1);
+      const revealed = Math.floor(progress * orig.length);
+      let display = '';
+      for (let i = 0; i < orig.length; i++) {
+        if (orig[i] === ' ') { display += ' '; continue; }
+        if (i < revealed) { display += orig[i]; }
+        else { display += chars[Math.floor(Math.random()*chars.length)]; }
+      }
+      el.textContent = display;
+      if (progress < 1) requestAnimationFrame(frame);
+      else el.textContent = orig;
+    }
+    requestAnimationFrame(frame);
+  }, delay);
+}
+
+window.addEventListener('load', () => {
+  setTimeout(() => {
+    const el = document.getElementById('hero-name');
+    scramble(el, 'Cheng', 1200, 200);
+  }, 1700);
+});
+
+// ══════════════════════════════════════════════
+//  BALL + LENS (touch-aware)
+// ══════════════════════════════════════════════
+const isMobile = () => window.matchMedia('(hover:none)').matches;
+const ballEl   = document.getElementById('ball');
+const lensEl   = document.getElementById('lens');
+const lensInner= document.getElementById('lens-inner');
+const lensMeta = document.getElementById('lens-meta');
+const heroTitle= document.getElementById('heroTitle');
+const heroHint = document.getElementById('heroHint');
+let bX = innerWidth/2, bY = innerHeight/2;
+let tX = bX, tY = bY;
+let BALL_R = ballEl.offsetWidth/2;
+const LERP = .08;
+let dragging = false;
+
+function onBall(t){
+  const r=ballEl.getBoundingClientRect();
+  const dx=t.clientX-(r.left+r.width/2), dy=t.clientY-(r.top+r.height/2);
+  return Math.sqrt(dx*dx+dy*dy)<r.width/2+28;
+}
+document.addEventListener('touchstart',e=>{
+  if(onBall(e.touches[0])){ dragging=true; const t=e.touches[0]; tX=t.clientX;tY=t.clientY; e.preventDefault(); }
+  else dragging=false;
+},{passive:false});
+document.addEventListener('touchmove',e=>{
+  if(dragging){ const t=e.touches[0]; tX=t.clientX;tY=t.clientY; e.preventDefault(); }
+},{passive:false});
+document.addEventListener('touchend',()=>dragging=false);
+
+document.addEventListener('mousemove',e=>{tX=e.clientX;tY=e.clientY;});
+
+function syncLens(){
+  const tr=heroTitle.getBoundingClientRect();
+  const ll=bX-BALL_R, lt=bY-BALL_R;
+  lensInner.style.left=(tr.left-ll)+'px';
+  lensInner.style.top=(tr.top-lt)+'px';
+  lensInner.style.position='absolute';
+  const sub=heroTitle.querySelector('.hero-sub');
+  if(sub){
+    const sr=sub.getBoundingClientRect();
+    lensMeta.style.left=(sr.left-ll)+'px';
+    lensMeta.style.top=(sr.top-lt)+'px';
+    lensMeta.style.position='absolute';
+    lensMeta.style.fontSize=getComputedStyle(sub).fontSize;
+  }
+}
+const MAX_TILT=14;
+function tilt(){
+  const hr=document.getElementById('hero').getBoundingClientRect();
+  const tr=heroTitle.getBoundingClientRect();
+  const tcx=tr.left+tr.width/2, tcy=tr.top+tr.height/2;
+  const rx2=-(bY-tcy)/(hr.height/2)*MAX_TILT*.5;
+  const ry2=(bX-tcx)/(hr.width/2)*MAX_TILT;
+  const tf=`perspective(900px) rotateX(${rx2}deg) rotateY(${ry2}deg)`;
+  heroTitle.style.transform=tf;
+  lensInner.style.transform=tf;
+}
+
+// Parallax hero bg on scroll
+window.addEventListener('scroll',()=>{
+  const sy=scrollY;
+  if(sy<innerHeight){
+    heroTitle.style.transform=`translateY(${sy*.12}px)`;
+    ballEl.style.transform=`translate(-50%,-50%) translateY(${sy*.06}px)`;
+    lensEl.style.transform=`translate(-50%,-50%) translateY(${sy*.06}px)`;
+  }
+},{passive:true});
+
+function loop(){
+  bX+=(tX-bX)*LERP; bY+=(tY-bY)*LERP;
+  ballEl.style.left=bX+'px'; ballEl.style.top=bY+'px';
+  lensEl.style.left=bX+'px'; lensEl.style.top=bY+'px';
+  syncLens();
+  const hr=document.getElementById('hero').getBoundingClientRect();
+  if(bY>hr.top&&bY<hr.bottom&&scrollY<100) tilt();
+  requestAnimationFrame(loop);
+}
+loop();
+
+window.addEventListener('load',()=>{
+  if(isMobile()) heroHint.innerHTML='<span></span>触摸圆球可拖动 · 向下滑动查看更多<span></span>';
+  BALL_R=ballEl.offsetWidth/2;
+});
+
+// ══════════════════════════════════════════════
+//  FLIP CARDS
+// ══════════════════════════════════════════════
+document.querySelectorAll('.flip-wrap').forEach(c=>{
+  c.addEventListener('click',()=>c.classList.toggle('flipped'));
+});
+
+// ══════════════════════════════════════════════
+//  MAGNETIC BUTTON
+// ══════════════════════════════════════════════
+const magBtn = document.getElementById('wechat-btn');
+if(magBtn){
+  magBtn.addEventListener('mousemove',e=>{
+    const r=magBtn.getBoundingClientRect();
+    const cx=r.left+r.width/2, cy=r.top+r.height/2;
+    const dx=(e.clientX-cx)*.25, dy=(e.clientY-cy)*.25;
+    magBtn.style.transform=`translate(${dx}px,${dy}px)`;
+  });
+  magBtn.addEventListener('mouseleave',()=>{
+    magBtn.style.transform='translate(0,0)';
+  });
+}
+
+// ══════════════════════════════════════════════
+//  SCROLL REVEAL
+// ══════════════════════════════════════════════
+const obs=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){ e.target.classList.add('vis'); obs.unobserve(e.target); }
+  });
+},{threshold:.08});
+document.querySelectorAll('.rv,.stagger-grid').forEach(el=>obs.observe(el));
+
+// sec-title uses clip-path wipe — observe separately
+const titleObs=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){ e.target.classList.add('vis'); titleObs.unobserve(e.target); }
+  });
+},{threshold:.15});
+document.querySelectorAll('.sec-title').forEach(el=>titleObs.observe(el));
+
+// Timeline items
+const tlObs=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){ setTimeout(()=>e.target.classList.add('vis'),60); tlObs.unobserve(e.target); }
+  });
+},{threshold:.12});
+document.querySelectorAll('.tl-item').forEach((el,i)=>{
+  el.style.transitionDelay=`${i*.07}s`; tlObs.observe(el);
+});
+
+// Timeline self-drawing vertical line
+const tlLineObs=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){ e.target.classList.add('line-vis'); tlLineObs.unobserve(e.target); }
+  });
+},{threshold:.05});
+const tlOuter=document.querySelector('.tl-outer');
+if(tlOuter) tlLineObs.observe(tlOuter);
+
+// ══════════════════════════════════════════════
+//  COUNTER ANIMATION (stats)
+// ══════════════════════════════════════════════
+function animCount(el){
+  const target=parseInt(el.dataset.count);
+  const suffix=el.dataset.suffix||'';
+  if(!target) return;
+  const duration=1400;
+  let start=null;
+  function step(ts){
+    if(!start) start=ts;
+    const p=Math.min((ts-start)/duration,1);
+    const ease=1-Math.pow(1-p,4); // easeOutQuart
+    const val=Math.floor(ease*target);
+    el.innerHTML=val+'<sup>'+suffix+'</sup>';
+    if(p<1) requestAnimationFrame(step);
+    else el.innerHTML=target+'<sup>'+suffix+'</sup>';
+  }
+  requestAnimationFrame(step);
+}
+const counterObs=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){
+      e.target.querySelectorAll('.stat-num[data-count]').forEach(n=>animCount(n));
+      counterObs.unobserve(e.target);
+    }
+  });
+},{threshold:.3});
+const statsGrid=document.querySelector('.about-stats');
+if(statsGrid) counterObs.observe(statsGrid);
+
+// ══════════════════════════════════════════════
+//  CLICK PARTICLES
+// ══════════════════════════════════════════════
+const pks=document.createElement('style');
+pks.textContent=`@keyframes px{0%{opacity:.9;transform:translate(0,0) scale(1)}to{opacity:0;transform:translate(var(--tx),var(--ty)) scale(0)}}`;
+document.head.appendChild(pks);
+function particles(x,y,n=10){
+  const cols=['#c8a96e','#8b7355','#111110','#9a9690'];
+  for(let i=0;i<n;i++){
+    const el=document.createElement('div');
+    const sz=2+Math.random()*5;
+    const ang=(Math.PI*2/n)*i+(Math.random()-.5)*.6;
+    const d=36+Math.random()*70;
+    const dur=.4+Math.random()*.35;
+    el.style.cssText=`position:fixed;border-radius:50%;pointer-events:none;z-index:9995;
+      left:${x}px;top:${y}px;width:${sz}px;height:${sz}px;
+      background:${cols[Math.floor(Math.random()*cols.length)]};
+      --tx:${Math.cos(ang)*d}px;--ty:${Math.sin(ang)*d}px;
+      animation:px ${dur}s ease-out forwards;`;
+    document.body.appendChild(el);
+    setTimeout(()=>el.remove(),dur*1000+60);
+  }
+}
+document.addEventListener('click',e=>particles(e.clientX,e.clientY,10));
+document.addEventListener('touchend',e=>{
+  const t=e.changedTouches[0]; particles(t.clientX,t.clientY,7);
+});
+
+// ══════════════════════════════════════════════
+//  COPY WECHAT
+// ══════════════════════════════════════════════
+function copyWechat(){
+  const id='KXYD0310';
+  const t=document.getElementById('toast');
+  const show=()=>{t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200)};
+  navigator.clipboard ? navigator.clipboard.writeText(id).then(show).catch(()=>{fb(id);show();}) : (fb(id),show());
+}
+function fb(txt){const ta=document.createElement('textarea');ta.value=txt;ta.style.cssText='position:fixed;opacity:0';document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);}
+
+// ══════════════════════════════════════════════
+//  LANGUAGE TOGGLE
+// ══════════════════════════════════════════════
+const langBtn=document.getElementById('lang-btn');
+let isEN=false;
+
+function applyLang(en){
+  isEN=en;
+  langBtn.textContent=en?'中文':'EN';
+  document.documentElement.setAttribute('lang',en?'en':'zh-CN');
+
+  // Switch all data-zh/data-en elements
+  document.querySelectorAll('[data-zh][data-en]').forEach(el=>{
+    const v=en?el.dataset.en:el.dataset.zh;
+    if(el.innerHTML.includes('<')||el.dataset.zh.includes('<br>')) el.innerHTML=v;
+    else el.textContent=v;
+  });
+
+  // Hero
+  document.getElementById('hero-name').textContent='Cheng';
+  scramble(document.getElementById('hero-name'), 'Cheng', 700, 0);
+  document.getElementById('hero-sub').textContent=en
+    ?'Social Media / Video / Frontend / Music'
+    :'新媒体运营 / 视频剪辑 / 前端设计 / 音乐编曲';
+  document.getElementById('lens-meta').textContent=en
+    ?'Social Media / Video / Frontend / Music'
+    :'新媒体运营 / 视频剪辑 / 前端设计 / 音乐编曲';
+  document.getElementById('hb-tl').textContent=en?'Social Media · 2 Yrs':'新媒体运营 · 2年经验';
+  document.getElementById('hb-br').textContent=en?'Lanzhou · ¥7–9K':'兰州 · 期望薪资 7-9K';
+
+  // About
+  document.getElementById('about-title').innerHTML=en?'Define yourself<br><em>through creation</em>':'用创作<br><em>定义自己</em>';
+  document.getElementById('about-body').innerHTML=en
+    ?'<p>Hi, I\'m <strong>Cheng Bohui</strong>. Male, 23, based in Lanzhou with 2 years of new media experience.</p><p>I work across social media operations, video production, frontend design, H5 game creation and music composition — serving merchants on TikTok, Xiaohongshu and Kuaishou.</p><p>I believe great content is not just information delivery, but experience design. A video, a webpage, a melody — all can become something truly moving.</p>'
+    :'<p>你好，我是<strong>程博辉</strong>。男，23岁，坐标兰州，2年新媒体运营经验。</p><p>我横跨新媒体运营、视频拍摄剪辑、前端网页设计、H5游戏制作与音乐编曲录音等多个领域，服务过抖音、小红书、快手等主流平台的商家客户。</p><p>我相信好的内容不只是信息的传递，更是体验的设计。一段视频、一个网页、一段旋律，都可以成为真正打动人的作品。</p>';
+
+  // Section titles
+  document.getElementById('skills-title').textContent=en?'What I Can Do':'我能做什么';
+  document.getElementById('works-title').textContent=en?'Featured Works':'代表作品';
+  document.getElementById('tl-title').textContent=en?'Work Experience':'工作经历';
+
+  // Contact
+  document.getElementById('contact-cta').innerHTML=en?'Have an idea?<br><em>Let\'s talk.</em>':'有想法？<br><em>来找我聊聊。</em>';
+  document.getElementById('wechat-hint').textContent=en?'Click to copy WeChat ID':'点击复制微信号';
+  document.getElementById('toast').textContent=en?'✓ WeChat ID Copied':'✓ 已复制微信号';
+  document.getElementById('foot-l').textContent=en?'© 2025 Cheng Bohui · CBH':'© 2025 程博辉 · CBH';
+  document.getElementById('heroHint').innerHTML=en
+    ?'<span></span>Move mouse to explore · Scroll for more<span></span>'
+    :'<span></span>移动鼠标探索 · 向下滚动查看更多<span></span>';
+  // Egg close button text
+  document.getElementById('egg-close').textContent=en?'× Close':'× 关闭';
+  document.getElementById('egg-sub').textContent=en?'Triple-click logo to trigger':'连续点击 Logo 三次触发';
+  localStorage.setItem('cbh-lang',en?'en':'zh');
+}
+
+const savedLang=localStorage.getItem('cbh-lang');
+if(savedLang) applyLang(savedLang==='en');
+langBtn.addEventListener('click',()=>applyLang(!isEN));
+</script>
+</body>
+</html>
